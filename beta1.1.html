@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sus OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --wallpaper: url('https://placehold.co/1920x1080/1a090d/c9184a?text=Sus+OS');
+            --bg-primary: rgba(15, 23, 42, 0.9);
+            --bg-secondary: rgba(30, 41, 59, 0.8);
+            --bg-tertiary: rgba(51, 65, 85, 0.8);
+            --bg-tertiary-hover: rgba(71, 85, 105, 0.8);
+            --bg-accent: rgba(255, 255, 255, 0.1);
+            --bg-accent-active: rgba(255, 255, 255, 0.15);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-primary: rgba(255, 255, 255, 0.2);
+            --shadow-primary: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            --accent-color: #c9184a;
+        }
+
+        body.light-theme {
+            --bg-primary: rgba(241, 245, 249, 0.9);
+            --bg-secondary: rgba(226, 232, 240, 0.85);
+            --bg-tertiary: rgba(203, 213, 225, 0.8);
+            --bg-tertiary-hover: rgba(168, 182, 200, 0.8);
+            --bg-accent: rgba(0, 0, 0, 0.08);
+            --bg-accent-active: rgba(0, 0, 0, 0.12);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --border-primary: rgba(0, 0, 0, 0.15);
+            --shadow-primary: 0 10px 25px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .desktop {
+            background: var(--wallpaper) no-repeat center center fixed;
+            background-size: cover;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        .window {
+            min-width: 250px;
+            min-height: 200px;
+            box-shadow: var(--shadow-primary);
+            border-radius: 10px;
+            resize: both;
+            overflow: auto;
+            display: none;
+            /* Initially hidden */
+            position: absolute;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            transform-origin: center;
+        }
+
+        .title-bar {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            cursor: move;
+            user-select: none;
+            background-color: var(--bg-secondary);
+            backdrop-filter: blur(8px);
+        }
+
+        .title-bar-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .title-bar-button {
+            width: 14px;
+            height: 14px;
+            border-radius: 9999px;
+            cursor: pointer;
+        }
+
+        .window-content {
+            height: calc(100% - 32px);
+            color: var(--text-primary);
+            padding: 12px;
+            overflow: auto;
+        }
+
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        body.light-theme .taskbar {
+            background-color: rgba(226, 232, 240, 0.5);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .taskbar-item {
+            padding: 6px 12px;
+            margin: 0 4px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .taskbar-item.active {
+            background-color: var(--bg-accent-active);
+        }
+
+        .taskbar-item.minimized {
+            background-color: transparent;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .start-button:hover,
+        .taskbar-item:hover {
+            background-color: var(--bg-accent);
+        }
+
+        #start-menu,
+        #context-menu {
+            position: absolute;
+            width: 250px;
+            background-color: var(--bg-primary);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 8px;
+            display: none;
+            z-index: 1000;
+        }
+
+        #start-menu {
+            bottom: 52px;
+            left: 8px;
+        }
+
+        .menu-item {
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background-color: var(--bg-accent);
+        }
+
+        .desktop-icon {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100px;
+            text-align: center;
+            user-select: none;
+        }
+
+        .desktop-icon.dragging {
+            background-color: rgba(255, 255, 255, 0.25);
+            z-index: 999;
+        }
+
+        .desktop-icon:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .desktop-icon svg,
+        .desktop-icon .icon-emoji {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 8px;
+            font-size: 40px;
+        }
+
+        #boot-screen {
+            background-color: #020617;
+            color: #cbd5e1;
+            font-family: 'Fira Code', monospace;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            font-family: 'Fira Code', monospace;
+            line-height: 1.2;
+        }
+
+        /* ----- App-Specific Styles ----- */
+        .terminal-content {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .terminal-input-line {
+            display: flex;
+        }
+
+        .terminal-prompt {
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            flex-grow: 1;
+            font-family: 'Fira Code', monospace;
+        }
+
+        #calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            height: calc(100% - 70px);
+        }
+
+        .calc-button {
+            background-color: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 1.25rem;
+            text-align: center;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .calc-button:hover {
+            background-color: var(--bg-tertiary-hover);
+        }
+
+        .calc-button.operator {
+            background-color: rgba(255, 143, 171, 0.8);
+        }
+
+        .calc-button.operator:hover {
+            background-color: rgba(255, 163, 188, 0.8);
+        }
+
+        #calc-display {
+            grid-column: 1 / -1;
+            background-color: rgba(10, 10, 10, 0.5);
+            padding: 12px;
+            text-align: right;
+            font-size: 2rem;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        body.light-theme #calc-display {
+            background-color: rgba(220, 220, 220, 0.5);
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            gap: 8px;
+        }
+
+        .file-item:hover {
+            background-color: var(--bg-accent);
+        }
+
+        .file-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        #file-path-bar {
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-primary);
+            font-family: 'Fira Code', monospace;
+            user-select: none;
+        }
+
+        #susi-chat-history {
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .susi-message {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+
+        .susi-message.user {
+            background-color: var(--accent-color);
+            color: white;
+            margin-left: auto;
+        }
+
+        .susi-message.susi {
+            background-color: var(--bg-tertiary);
+        }
+
+        #susi-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            padding: 8px;
+            border-radius: 6px;
+            color: var(--text-primary);
+        }
+
+        .wallpaper-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .wallpaper-thumb {
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .wallpaper-thumb.selected {
+            border-color: var(--accent-color);
+        }
+
+        .wallpaper-thumb img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+
+        #browser-nav {
+            display: flex;
+            gap: 5px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 8px;
+        }
+
+        #browser-url-bar {
+            flex-grow: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            padding: 5px 8px;
+            border-radius: 6px;
+            color: var(--text-primary);
+        }
+
+        #browser-go-btn {
+            padding: 5px 12px;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #browser-iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+            background-color: #fff;
+            border-radius: 4px;
+        }
+
+        #music-player-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        #album-art {
+            width: 150px;
+            height: 150px;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        #track-info {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        #music-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white overflow-hidden h-screen">
+
+    <div id="boot-screen"
+        class="absolute inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div id="boot-logo">
+            <svg class="w-24 h-24 text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286Zm-1.5 6.445 3.75 3.75a.75.75 0 0 0 1.06 0l3.75-3.75a.75.75 0 1 0-1.06-1.06L12 14.69l-2.47-2.47a.75.75 0 0 0-1.06 1.06Z" />
+            </svg>
+        </div>
+        <p class="text-2xl mt-4">Sus OS</p>
+        <div id="boot-log" class="mt-8 text-sm text-left w-96 h-48 overflow-y-auto"></div>
+        <div id="boot-status" class="mt-4 text-sm">Loading kernel...</div>
+    </div>
+
+    <main id="os-interface" class="desktop w-full h-full opacity-0 transition-opacity duration-1000">
+        <div id="desktop-icons-container" class="w-full h-full absolute top-0 left-0"></div>
+        <div id="windows-container"></div>
+        <div class="taskbar">
+            <div id="start-button" class="start-button p-2 rounded-md cursor-pointer">
+                <svg class="w-6 h-6 text-pink-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286Zm-1.5 6.445 3.75 3.75a.75.75 0 0 0 1.06 0l3.75-3.75a.75.75 0 1 0-1.06-1.06L12 14.69l-2.47-2.47a.75.75 0 0 0-1.06 1.06Z" />
+                </svg>
+            </div>
+            <div id="taskbar-apps" class="flex items-center"></div>
+            <div class="ml-auto text-sm" id="clock">12:00:00 PM</div>
+        </div>
+        <div id="start-menu"></div>
+        <div id="context-menu"></div>
+    </main>
+
+    <script>
+        const SusOS = {
+            // --- CONFIGURATION ---
+            config: {
+                apps: [
+                    { id: 'susi-assistant', name: 'SUSI Assistant', icon: '🤖', onDesktop: true, init: 'initSusiAssistant' },
+                    { id: 'file-explorer', name: 'File Explorer', icon: '📁', onDesktop: true, init: 'initFileExplorer' },
+                    { id: 'terminal', name: 'Terminal', icon: '_>', onDesktop: true, init: 'initTerminal' },
+                    { id: 'notepad', name: 'Notepad', icon: '📝', onDesktop: true, init: 'initNotepad' },
+                    { id: 'calculator', name: 'Calculator', icon: '🧮', onDesktop: true, init: 'initCalculator' },
+                    { id: 'browser', name: 'Browser', icon: '🌐', onDesktop: true, init: 'initBrowser' },
+                    { id: 'music-player', name: 'Music Player', icon: '🎵', onDesktop: true, init: 'initMusicPlayer' },
+                    { id: 'settings', name: 'Settings', icon: '⚙️', onDesktop: false, init: 'initSettings' },
+                ],
+                wallpapers: {
+                    'sus-os': "https://placehold.co/1920x1080/1a090d/c9184a?text=Sus+OS",
+                    'aurora': "https://placehold.co/1920x1080/0d1b2a/e0e1dd?text=Aurora",
+                    'forest': "https://placehold.co/1920x1080/22577a/80ed99?text=Forest",
+                    'dusk': "https://placehold.co/1920x1080/3d405b/e07a5f?text=Dusk"
+                }
+            },
+
+            // --- KERNEL & BOOT ---
+            Kernel: {
+                boot: (isReboot = false) => {
+                    console.log("Boot sequence started.");
+                    const bootScreen = document.getElementById('boot-screen');
+                    const osInterface = document.getElementById('os-interface');
+                    bootScreen.style.display = 'flex';
+                    osInterface.style.opacity = '0';
+                    setTimeout(() => { bootScreen.style.opacity = '1'; }, 10);
+
+                    const bootLog = document.getElementById('boot-log');
+                    const bootStatus = document.getElementById('boot-status');
+                    bootLog.innerHTML = '';
+
+                    if (!isReboot) {
+                        try { new Audio('https://www.myinstants.com/media/sounds/windows-xp-startup.mp3').play(); } catch (e) { console.warn("Could not play startup sound."); }
+                    }
+
+                    const bootMessages = [
+                        "INIT: Sus Bootloader v2.1", "MEM: Checking RAM... 16384MB OK", "CPU: Initializing Sus Core...", "ACPI: Parsing tables...", "DRV: Loading virtual HID drivers...", "DRV: Loading graphics drivers...", "FS: Mounting virtual file system (vfs)...", "NET: Starting network services...", "SVC: Launching window manager...", "SVC: Initializing AI Subsystem...", "SVC: Starting UI services...", "BOOT: System ready. Handing over to user..."
+                    ];
+
+                    let i = 0;
+                    const bootInterval = setInterval(() => {
+                        if (i < bootMessages.length) {
+                            bootStatus.textContent = bootMessages[i].split(':')[1].trim();
+                            const p = document.createElement('p');
+                            p.innerHTML = `<span class="text-green-400">[OK]</span> ${bootMessages[i]}`;
+                            bootLog.appendChild(p);
+                            bootLog.scrollTop = bootLog.scrollHeight;
+                            i++;
+                        } else {
+                            clearInterval(bootInterval);
+                            bootScreen.style.opacity = '0';
+                            setTimeout(() => {
+                                bootScreen.style.display = 'none';
+                                osInterface.style.opacity = '1';
+                                if (!isReboot) SusOS.System.init();
+                            }, 1000);
+                        }
+                    }, 150);
+                }
+            },
+
+            // --- CORE SYSTEM SERVICES ---
+            System: {
+                init: () => {
+                    console.log("Initializing system services...");
+                    SusOS.System.startClock();
+                    SusOS.WindowManager.init();
+                    SusOS.UI.initStartMenu();
+                    SusOS.UI.initDesktopIcons();
+                    SusOS.UI.initWindowsContainer();
+                    SusOS.UI.initContextMenu();
+
+                    SusOS.config.apps.forEach(app => {
+                        if (SusOS.Apps[app.init]) {
+                            SusOS.Apps[app.init]();
+                        }
+                    });
+
+                    // Load saved theme
+                    const savedTheme = localStorage.getItem('sus_os_theme');
+                    if (savedTheme) document.body.className = savedTheme;
+
+                    const savedWallpaper = localStorage.getItem('sus_os_wallpaper');
+                    if (savedWallpaper && SusOS.config.wallpapers[savedWallpaper]) {
+                        document.documentElement.style.setProperty('--wallpaper', `url('${SusOS.config.wallpapers[savedWallpaper]}')`);
+                    }
+
+                    document.getElementById('os-interface').addEventListener('click', (event) => {
+                        SusOS.UI.hideStartMenu();
+                        SusOS.UI.hideContextMenu();
+                    });
+                },
+                startClock: () => {
+                    const clockElement = document.getElementById('clock');
+                    setInterval(() => { clockElement.textContent = new Date().toLocaleTimeString(); }, 1000);
+                },
+                showError: (title, message) => {
+                    const errorId = 'error-dialog-' + Date.now();
+                    const appConfig = { id: errorId, name: title };
+                    const errorContent = SusOS.WindowManager.createWindow(appConfig, { width: 350, height: 200, resizable: false });
+                    errorContent.innerHTML = `
+                         <div class="p-4 flex flex-col items-center text-center justify-center h-full">
+                             <svg class="w-16 h-16 text-red-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                             <h3 class="font-bold text-lg">${title}</h3>
+                             <p class="text-sm text-slate-300 mt-1">${message}</p>
+                         </div>
+                     `;
+
+                    SusOS.WindowManager.open(errorId);
+                }
+            },
+
+            // --- UI MANAGEMENT ---
+            UI: {
+                initDesktopIcons: () => {
+                    const container = document.getElementById('desktop-icons-container');
+                    container.innerHTML = '';
+                    let top = 16; let left = 16;
+                    SusOS.config.apps.filter(app => app.onDesktop).forEach(app => {
+                        const iconEl = document.createElement('div');
+                        iconEl.className = 'desktop-icon';
+                        iconEl.draggable = true;
+                        iconEl.id = `desktop-icon-${app.id}`;
+                        iconEl.innerHTML = `<div class="icon-emoji">${app.icon}</div><span class="truncate">${app.name}</span>`;
+                        iconEl.style.left = `${left}px`;
+                        iconEl.style.top = `${top}px`;
+
+                        iconEl.ondblclick = () => SusOS.WindowManager.open(app.id);
+                        iconEl.addEventListener('dragstart', (e) => {
+                            e.dataTransfer.setData('text/plain', app.id);
+                            setTimeout(() => iconEl.classList.add('dragging'), 0);
+                        });
+                        iconEl.addEventListener('dragend', () => iconEl.classList.remove('dragging'));
+
+                        container.appendChild(iconEl);
+                        top += 110;
+                        if (top + 110 > window.innerHeight - 48) {
+                            top = 16; left += 110;
+                        }
+                    });
+
+                    container.addEventListener('dragover', e => e.preventDefault());
+                    container.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const appId = e.dataTransfer.getData('text/plain');
+                        const iconEl = document.getElementById(`desktop-icon-${appId}`);
+                        if (iconEl) {
+                            iconEl.style.left = `${e.clientX - 50}px`; // 50 is half icon width
+                            iconEl.style.top = `${e.clientY - 50}px`; // 50 is half icon height
+                        }
+                    });
+                },
+                initStartMenu: () => {
+                    const startMenu = document.getElementById('start-menu');
+                    const startButton = document.getElementById('start-button');
+                    startMenu.innerHTML = ''; // Clear first
+
+                    SusOS.config.apps.forEach(app => {
+                        const item = document.createElement('div');
+                        item.className = 'menu-item';
+                        item.innerHTML = `<span class="text-xl">${app.icon}</span><span>${app.name}</span>`;
+                        item.onclick = () => { SusOS.WindowManager.open(app.id); SusOS.UI.hideStartMenu(); };
+                        startMenu.appendChild(item);
+                    });
+
+                    startButton.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
+                    });
+                },
+                initWindowsContainer: () => {
+                    const container = document.getElementById('windows-container');
+                    container.innerHTML = '';
+                    SusOS.config.apps.forEach(app => {
+                        SusOS.WindowManager.createWindow(app, {});
+                    });
+                },
+                initContextMenu: () => {
+                    const menu = document.getElementById('context-menu');
+                    document.getElementById('os-interface').addEventListener('contextmenu', e => {
+                        if (e.target.closest('.window')) return; // Don't show on windows
+                        e.preventDefault();
+                        SusOS.UI.hideStartMenu();
+                        menu.style.top = `${e.clientY}px`;
+                        menu.style.left = `${e.clientX}px`;
+                        menu.style.display = 'block';
+                    });
+                    menu.innerHTML = `
+                         <div class="menu-item" onclick="SusOS.WindowManager.open('settings'); SusOS.UI.hideContextMenu();">⚙️<span>Change Appearance</span></div>
+                         <div class="menu-item" onclick="SusOS.WindowManager.open('susi-assistant'); SusOS.UI.hideContextMenu();">🤖<span>Open SUSI Assistant</span></div>
+                         <hr class="border-gray-600 my-1">
+                         <div class="menu-item" onclick="SusOS.Kernel.boot(true)">🔄<span>Reboot</span></div>
+                     `;
+                },
+                hideStartMenu: () => document.getElementById('start-menu').style.display = 'none',
+                hideContextMenu: () => document.getElementById('context-menu').style.display = 'none',
+
+                updateTaskbar: () => {
+                    const taskbarApps = document.getElementById('taskbar-apps');
+                    taskbarApps.innerHTML = '';
+                    const openWindows = SusOS.WindowManager.getOpenWindows();
+
+                    openWindows.forEach(win => {
+                        const appId = win.id;
+                        const app = SusOS.config.apps.find(a => a.id === appId);
+                        if (!app) return;
+
+                        const item = document.createElement('div');
+                        item.className = 'taskbar-item';
+                        if (win.style.zIndex == SusOS.WindowManager.zIndexCounter) item.classList.add('active');
+                        if (win.dataset.minimized === 'true') item.classList.add('minimized');
+
+                        item.innerHTML = `<span class="text-lg">${app.icon}</span> ${app.name}`;
+                        item.onclick = () => SusOS.WindowManager.focus(appId);
+                        taskbarApps.appendChild(item);
+                    });
+                }
+            },
+
+            // --- WINDOW MANAGEMENT ---
+            WindowManager: {
+                zIndexCounter: 10,
+                openWindows: new Set(),
+                init: () => { },
+                createWindow: (app, options = {}) => {
+                    const container = document.getElementById('windows-container');
+                    let win = document.getElementById(app.id);
+                    if (win) { // Window already exists
+                        return win.querySelector('.window-content');
+                    }
+
+                    win = document.createElement('div');
+                    win.id = app.id;
+                    win.className = 'window';
+
+                    const savedState = JSON.parse(localStorage.getItem(`sus_os_window_${app.id}`));
+
+                    const defaultPos = { top: `${15 + Math.random() * 15}%`, left: `${20 + Math.random() * 20}%` };
+                    const defaultSize = { width: '580px', height: '420px' };
+
+                    win.style.top = savedState?.top || options.top || defaultPos.top;
+                    win.style.left = savedState?.left || options.left || defaultPos.left;
+                    win.style.width = savedState?.width || options.width || defaultSize.width;
+                    win.style.height = savedState?.height || options.height || defaultSize.height;
+                    if (options.resizable === false) win.style.resize = 'none';
+
+                    win.innerHTML = `
+                        <div class="title-bar">
+                            <span>${app.name}</span>
+                            <div class="title-bar-buttons">
+                                <div class="title-bar-button bg-yellow-500 hover:bg-yellow-600" onclick="SusOS.WindowManager.minimize('${app.id}')"></div>
+                                <div class="title-bar-button bg-green-500 hover:bg-green-600" onclick="SusOS.WindowManager.maximize('${app.id}')"></div>
+                                <div class="title-bar-button bg-red-500 hover:bg-red-600" onclick="SusOS.WindowManager.close('${app.id}')"></div>
+                            </div>
+                        </div>
+                        <div class="window-content" id="${app.id}-content"></div>
+                    `;
+                    container.appendChild(win);
+
+                    win.addEventListener('mousedown', () => SusOS.WindowManager.focus(app.id));
+                    SusOS.WindowManager.makeDraggable(win);
+                    return win.querySelector('.window-content');
+                },
+                open: (appId) => {
+                    const win = document.getElementById(appId);
+                    if (!win) return;
+
+                    win.style.display = 'block';
+                    setTimeout(() => {
+                        win.style.opacity = '1';
+                        win.style.transform = 'scale(1)';
+                    }, 10);
+                    win.dataset.minimized = 'false';
+
+                    SusOS.WindowManager.openWindows.add(win);
+                    SusOS.WindowManager.focus(appId);
+                },
+                close: (appId) => {
+                    const win = document.getElementById(appId);
+                    if (!win) return;
+
+                    const state = { top: win.style.top, left: win.style.left, width: win.style.width, height: win.style.height };
+                    localStorage.setItem(`sus_os_window_${appId}`, JSON.stringify(state));
+
+                    win.style.opacity = '0';
+                    win.style.transform = 'scale(0.95)';
+                    setTimeout(() => { win.style.display = 'none'; }, 200);
+
+                    SusOS.WindowManager.openWindows.delete(win);
+                    SusOS.UI.updateTaskbar();
+                },
+                focus: (appId) => {
+                    const win = document.getElementById(appId);
+                    if (!win) return;
+                    if (win.dataset.minimized === 'true') {
+                        SusOS.WindowManager.restore(appId);
+                    }
+                    win.style.zIndex = ++SusOS.WindowManager.zIndexCounter;
+                    SusOS.UI.updateTaskbar();
+                },
+                minimize: (appId) => {
+                    const win = document.getElementById(appId);
+                    if (!win) return;
+                    win.style.opacity = '0';
+                    setTimeout(() => win.style.display = 'none', 200);
+                    win.dataset.minimized = 'true';
+                    SusOS.UI.updateTaskbar();
+                },
+                restore: (appId) => {
+                    const win = document.getElementById(appId);
+                    if (!win) return;
+                    win.style.display = 'block';
+                    setTimeout(() => win.style.opacity = '1', 10);
+                    win.dataset.minimized = 'false';
+                    SusOS.WindowManager.focus(appId);
+                },
+                maximize: (appId) => {
+                    const win = document.getElementById(appId);
+                    if (!win) return;
+
+                    if (win.dataset.maximized === 'true') {
+                        win.style.top = win.dataset.oldTop;
+                        win.style.left = win.dataset.oldLeft;
+                        win.style.width = win.dataset.oldWidth;
+                        win.style.height = win.dataset.oldHeight;
+                        win.dataset.maximized = 'false';
+                    } else {
+                        win.dataset.oldTop = win.style.top;
+                        win.dataset.oldLeft = win.style.left;
+                        win.dataset.oldWidth = win.style.width;
+                        win.dataset.oldHeight = win.style.height;
+
+                        win.style.top = '0';
+                        win.style.left = '0';
+                        win.style.width = '100%';
+                        win.style.height = 'calc(100% - 48px)';
+                        win.dataset.maximized = 'true';
+                    }
+                    SusOS.WindowManager.focus(appId);
+                },
+                getOpenWindows: () => Array.from(SusOS.WindowManager.openWindows).filter(win => win.style.display !== 'none' || win.dataset.minimized === 'true'),
+                makeDraggable: (elmnt) => {
+                    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                    const titleBar = elmnt.querySelector(".title-bar");
+                    if (titleBar) titleBar.onmousedown = dragMouseDown;
+
+                    function dragMouseDown(e) {
+                        if (e.target.classList.contains('title-bar-button') || elmnt.dataset.maximized === 'true') return;
+                        e.preventDefault();
+                        pos3 = e.clientX; pos4 = e.clientY;
+                        document.onmouseup = closeDragElement;
+                        document.onmousemove = elementDrag;
+                    }
+
+                    function elementDrag(e) {
+                        e.preventDefault();
+                        pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+                        pos3 = e.clientX; pos4 = e.clientY;
+                        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                    }
+
+                    function closeDragElement() {
+                        document.onmouseup = null; document.onmousemove = null;
+                    }
+                }
+            },
+
+            // --- APPLICATIONS ---
+            Apps: {
+                // ... Existing Apps ...
+                initTerminal: () => {
+                    const content = document.getElementById('terminal-content');
+                    content.innerHTML = `<div id="terminal-output"><p>Welcome to Sus OS Terminal. Type 'help' for commands.</p></div><div class="terminal-input-line"><span class="terminal-prompt">user@sus:~$</span><input type="text" id="terminal-input" class="terminal-input" autocomplete="off"></div>`;
+                    const input = document.getElementById('terminal-input');
+                    const output = document.getElementById('terminal-output');
+                    content.onclick = () => input.focus();
+                    input.addEventListener('keydown', (event) => {
+                        if (event.key === "Enter") {
+                            const command = input.value.trim();
+                            output.innerHTML += `<div><span class="terminal-prompt">user@sus:~$</span> ${command}</div>`;
+                            SusOS.Apps.handleTerminalCommand(command, output);
+                            input.value = '';
+                            content.scrollTop = content.scrollHeight;
+                        }
+                    });
+                },
+                handleTerminalCommand: (command, output) => {
+                    const args = command.split(' ');
+                    const cmd = args[0].toLowerCase();
+                    const response = document.createElement('div');
+
+                    switch (cmd) {
+                        case 'help':
+                            response.innerHTML = `<pre>Available commands:\n- help:       Show this message\n- date:       Display current date and time\n- echo [..]:  Print text to the screen\n- clear:      Clear the terminal screen\n- whoami:     Display the current user\n- neofetch:   Show system info\n- open [app]: Open an application (e.g., open calculator)\n- sys [cmd]:  System commands (reboot, shutdown)</pre>`;
+                            break;
+                        case 'neofetch':
+                            response.innerHTML = `<pre style="color: #ff8fab;">
+     ,---.      user@sus
+    /  _.-'     ----------
+   /  /--.      OS: Sus OS v2.1
+   |    |      Kernel: Sus Kernel v2.1
+   '----'      Uptime: ${Math.floor(performance.now() / 1000)}s
+               Theme: ${localStorage.getItem('sus_os_theme') || 'dark'}
+</pre>`;
+                            break;
+                        case 'date': response.textContent = new Date().toString(); break;
+                        case 'echo': response.textContent = args.slice(1).join(' '); break;
+                        case 'clear': output.innerHTML = ''; return;
+                        case 'whoami': response.textContent = 'user'; break;
+                        case 'open':
+                            const appToOpen = args[1]?.toLowerCase();
+                            const foundApp = SusOS.config.apps.find(a => a.name.toLowerCase().replace(' ', '') === appToOpen);
+                            if (foundApp) {
+                                SusOS.WindowManager.open(foundApp.id);
+                                response.textContent = `Opening ${foundApp.name}...`;
+                            } else {
+                                response.textContent = `Error: App '${args[1]}' not found.`;
+                            }
+                            break;
+                        case 'sys':
+                            if (args[1] === 'reboot') { response.textContent = 'Rebooting system...'; SusOS.Kernel.boot(true); }
+                            else if (args[1] === 'shutdown') { response.textContent = 'Sus OS does not believe in shutting down.'; }
+                            else { response.textContent = `Error: Unknown sys command '${args[1]}'.`; }
+                            break;
+                        case '': return;
+                        default: response.textContent = `bash: command not found: ${cmd}`;
+                    }
+                    output.appendChild(response);
+                },
+
+                initNotepad: () => {
+                    const content = document.getElementById('notepad-content');
+                    content.innerHTML = `<textarea id="notepad-textarea" class="w-full h-full bg-transparent border-0 resize-none focus:outline-none" style="color: var(--text-primary)" placeholder="Start typing..."></textarea>`;
+                    const textarea = document.getElementById('notepad-textarea');
+                    textarea.value = localStorage.getItem('sus_os_notepad') || '';
+                    textarea.addEventListener('input', () => {
+                        localStorage.setItem('sus_os_notepad', textarea.value);
+                    });
+                },
+
+                initCalculator: () => { /* No changes, code omitted for brevity */ },
+
+                initFileExplorer: () => {
+                    const content = document.getElementById('file-explorer-content');
+                    const vfs = {
+                        'C:': {
+                            'Documents': { 'report.txt': null, 'plan.docx': null },
+                            'Downloads': { 'installer.exe': null },
+                            'Music': { 'track1.mp3': null },
+                            'Users': { 'Guest': {} },
+                            'system.dll': null,
+                        }
+                    };
+                    let currentPath = ['C:'];
+
+                    const render = (path) => {
+                        let currentLevel = vfs;
+                        path.forEach(p => { currentLevel = currentLevel[p]; });
+
+                        let html = `<div id="file-path-bar">
+                           <span class="cursor-pointer" data-path-idx="-1">🏠</span> / ${path.join(' / ')}
+                        </div>`;
+
+                        Object.entries(currentLevel).forEach(([name, content]) => {
+                            const isDir = content !== null;
+                            const icon = isDir ? '📁' : (name.endsWith('.txt') ? '📄' : (name.endsWith('.mp3') ? '🎵' : '❓'));
+                            html += `<div class="file-item" data-name="${name}" data-is-dir="${isDir}">
+                                <span class="text-xl">${icon}</span> <span>${name}</span>
+                            </div>`;
+                        });
+                        content.innerHTML = html;
+
+                        content.querySelectorAll('.file-item').forEach(item => {
+                            item.onclick = () => {
+                                if (item.dataset.isDir === 'true') {
+                                    currentPath.push(item.dataset.name);
+                                    render(currentPath);
+                                }
+                            };
+                        });
+                        content.querySelector('#file-path-bar').onclick = (e) => {
+                            const idx = e.target.dataset.pathIdx;
+                            if (idx === '-1') currentPath = ['C:']; // Go home
+                            else currentPath = currentPath.slice(0, parseInt(idx) + 1);
+                            render(currentPath);
+                        };
+                    };
+                    render(currentPath);
+                },
+
+                initSusiAssistant: () => { /* No changes, code omitted for brevity */ },
+
+                initSettings: () => {
+                    const content = document.getElementById('settings-content');
+                    let gridHTML = '';
+                    Object.entries(SusOS.config.wallpapers).forEach(([id, url]) => {
+                        gridHTML += `<div class="wallpaper-thumb" data-id="${id}" onclick="SusOS.Apps.setWallpaper('${id}')"><img src="${url.replace('1920x1080', '240x135')}" alt="${id}"></div>`;
+                    });
+
+                    content.innerHTML = `
+                        <div class="settings-section">
+                           <h3 class="text-lg font-bold mb-4">Theme</h3>
+                           <div class="flex gap-4">
+                              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="theme" value="" ${!document.body.className ? 'checked' : ''}> Dark Mode</label>
+                              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="theme" value="light-theme" ${document.body.className === 'light-theme' ? 'checked' : ''}> Light Mode</label>
+                           </div>
+                        </div>
+                        <div class="settings-section">
+                           <h3 class="text-lg font-bold mb-4">Change Wallpaper</h3>
+                           <div class="wallpaper-grid">${gridHTML}</div>
+                        </div>
+                    `;
+
+                    const savedWallpaper = localStorage.getItem('sus_os_wallpaper') || 'sus-os';
+                    content.querySelector(`.wallpaper-thumb[data-id="${savedWallpaper}"]`).classList.add('selected');
+
+                    content.querySelectorAll('input[name="theme"]').forEach(radio => {
+                        radio.onchange = (e) => {
+                            document.body.className = e.target.value;
+                            localStorage.setItem('sus_os_theme', e.target.value);
+                        }
+                    });
+                },
+                setWallpaper: (id) => {
+                    if (SusOS.config.wallpapers[id]) {
+                        document.documentElement.style.setProperty('--wallpaper', `url('${SusOS.config.wallpapers[id]}')`);
+                        localStorage.setItem('sus_os_wallpaper', id);
+                        const container = document.getElementById('settings-content');
+                        container.querySelectorAll('.wallpaper-thumb').forEach(el => el.classList.remove('selected'));
+                        container.querySelector(`.wallpaper-thumb[data-id="${id}"]`).classList.add('selected');
+                    }
+                },
+                initBrowser: () => {
+                    const content = document.getElementById('browser-content');
+                    content.innerHTML = `
+                       <div id="browser-nav">
+                          <input id="browser-url-bar" type="text" value="https://www.google.com/webhp?igu=1">
+                          <button id="browser-go-btn">Go</button>
+                       </div>
+                       <iframe id="browser-iframe" src="https://www.google.com/webhp?igu=1" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation"></iframe>
+                    `;
+                    const goBtn = document.getElementById('browser-go-btn');
+                    const urlBar = document.getElementById('browser-url-bar');
+                    const iframe = document.getElementById('browser-iframe');
+
+                    const navigate = () => {
+                        let url = urlBar.value;
+                        if (!url.startsWith('http')) url = 'https://' + url;
+                        iframe.src = url;
+                    };
+
+                    goBtn.onclick = navigate;
+                    urlBar.onkeydown = (e) => { if (e.key === 'Enter') navigate() };
+                },
+
+                initMusicPlayer: () => {
+                    const content = document.getElementById('music-player-content');
+                    const playlist = [
+                        { title: 'Lofi Chill', artist: 'Sus Beats', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', art: '🎧' },
+                        { title: 'Synthwave Drive', artist: 'Sus Beats', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', art: '🚗' },
+                        { title: 'Acoustic Morning', artist: 'Sus Beats', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', art: '☀️' }
+                    ];
+                    let currentTrackIdx = 0;
+                    const audio = new Audio();
+
+                    content.innerHTML = `
+                       <div id="album-art"></div>
+                       <div id="track-info">
+                          <h4 id="track-title" class="text-xl font-bold"></h4>
+                          <p id="track-artist" class="text-sm"></p>
+                       </div>
+                       <div id="music-controls">
+                           <button id="prev-btn" class="control-btn">⏮</button>
+                           <button id="play-pause-btn" class="control-btn text-4xl">▶️</button>
+                           <button id="next-btn" class="control-btn">⏭</button>
+                       </div>
+                    `;
+
+                    const titleEl = content.querySelector('#track-title');
+                    const artistEl = content.querySelector('#track-artist');
+                    const artEl = content.querySelector('#album-art');
+                    const playPauseBtn = content.querySelector('#play-pause-btn');
+
+                    const loadTrack = (idx) => {
+                        const track = playlist[idx];
+                        titleEl.textContent = track.title;
+                        artistEl.textContent = track.artist;
+                        artEl.textContent = track.art;
+                        audio.src = track.src;
+                        playPauseBtn.textContent = '▶️';
+                    };
+
+                    playPauseBtn.onclick = () => {
+                        if (audio.paused) { audio.play(); playPauseBtn.textContent = '⏸️'; }
+                        else { audio.pause(); playPauseBtn.textContent = '▶️'; }
+                    };
+
+                    content.querySelector('#next-btn').onclick = () => {
+                        currentTrackIdx = (currentTrackIdx + 1) % playlist.length;
+                        loadTrack(currentTrackIdx);
+                        audio.play(); playPauseBtn.textContent = '⏸️';
+                    };
+
+                    content.querySelector('#prev-btn').onclick = () => {
+                        currentTrackIdx = (currentTrackIdx - 1 + playlist.length) % playlist.length;
+                        loadTrack(currentTrackIdx);
+                        audio.play(); playPauseBtn.textContent = '⏸️';
+                    };
+
+                    loadTrack(0);
+                }
+            },
+        };
+
+        // Re-initialize code for existing apps that was omitted for brevity
+        SusOS.Apps.initCalculator = () => {
+            const content = document.getElementById('calculator-content');
+            content.innerHTML = `<div id="calc-display">0</div><div id="calculator-grid"></div>`;
+            const display = document.getElementById('calc-display');
+            const grid = document.getElementById('calculator-grid');
+            const buttons = ['C', '()', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
+            buttons.forEach(label => {
+                const button = document.createElement('div');
+                button.textContent = label;
+                button.className = 'calc-button';
+                if ('/*-+%'.includes(label)) button.classList.add('operator');
+                if (label === '=') button.style.gridColumn = 'span 2';
+                button.addEventListener('click', () => {
+                    let currentInput = display.textContent;
+                    if (label === 'C') { currentInput = '0'; }
+                    else if (label === '=') {
+                        try { currentInput = String(eval(currentInput.replace('%', '/100'))); }
+                        catch (e) { SusOS.System.showError("Calculator Error", "The expression entered is invalid."); currentInput = '0'; }
+                    } else {
+                        if (currentInput === '0' && !'/*-+%'.includes(label)) { currentInput = label; }
+                        else { currentInput += label; }
+                    }
+                    display.textContent = currentInput;
+                });
+                grid.appendChild(button);
+            });
+        };
+        SusOS.Apps.initSusiAssistant = () => {
+            const content = document.getElementById('susi-assistant-content');
+            content.innerHTML = `<div id="susi-chat-history"></div><input id="susi-input" type="text" placeholder="Ask SUSI something..." autocomplete="off">`;
+            const input = document.getElementById('susi-input');
+            const history = document.getElementById('susi-chat-history');
+            const addMessage = (text, sender) => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `susi-message ${sender}`;
+                msgDiv.textContent = text;
+                history.appendChild(msgDiv);
+                history.scrollTop = history.scrollHeight;
+            };
+            addMessage("Hello! I'm SUSI, your assistant. How can I help?", "susi");
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && input.value.trim() !== '') {
+                    const userText = input.value.trim();
+                    addMessage(userText, 'user');
+                    input.value = '';
+                    setTimeout(() => {
+                        const response = SusOS.Apps.getSusiResponse(userText);
+                        addMessage(response, 'susi');
+                    }, 500 + Math.random() * 500);
+                }
+            });
+        };
+        SusOS.Apps.getSusiResponse = (text) => {
+            const cmd = text.toLowerCase();
+            if (cmd.includes('hello') || cmd.includes('hi')) return "Hi there! What can I do for you?";
+            if (cmd.includes('your name')) return "My name is SUSI, the Sus OS Intelligent Assistant.";
+            if (cmd.includes('time')) return `The current time is ${new Date().toLocaleTimeString()}.`;
+            if (cmd.includes('open calculator')) { SusOS.WindowManager.open('calculator'); return "Opening the calculator for you."; }
+            if (cmd.includes('open notepad')) { SusOS.WindowManager.open('notepad'); return "Sure, opening the notepad."; }
+            if (cmd.includes('open terminal')) { SusOS.WindowManager.open('terminal'); return "Opening the terminal."; }
+            if (cmd.includes('joke')) {
+                const jokes = ["Why don't scientists trust atoms? Because they make up everything!", "I told my computer I needed a break, and now it won’t stop sending me Kit-Kat ads.", "Why did the scarecrow win an award? Because he was outstanding in his field!"];
+                return jokes[Math.floor(Math.random() * jokes.length)];
+            }
+            if (cmd.includes('who are you')) return "I'm a simple AI assistant running on Sus OS. I can answer basic questions and open apps for you.";
+            return "I'm not sure how to respond to that. You can ask me to open apps like 'open calculator', or ask for the time.";
+        };
+
+
+        // --- ENTRY POINT ---
+        window.onload = () => SusOS.Kernel.boot();
+
+    </script>
+</body>
+
+</html>
